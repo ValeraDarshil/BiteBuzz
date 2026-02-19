@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiteBuzz — Smart Campus Canteen</title>
+  <meta name="description" content="Order your favourite food from campus canteen. Fresh, fast, and delicious!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen">
+  <div class="loading-logo">
+    <div class="l-icon">🍔</div>
+    BiteBuzz
+  </div>
+  <div class="loading-bar">
+    <div class="loading-bar-fill"></div>
+  </div>
+</div>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon">🍔</div>
+      BiteBuzz
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" data-page="home" class="active">Home</a></li>
+      <li><a href="#" data-page="menu">Menu</a></li>
+      <li><a href="#" data-page="cart">Cart</a></li>
+      <li><a href="#" data-page="status">Order Status</a></li>
+      <li><a href="#" data-page="admin">Admin</a></li>
+      <li><a href="#" data-page="login">Login</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="dark-toggle" title="Toggle Dark Mode"></div>
+      <button class="cart-btn" title="View Cart">
+        🛒
+        <span class="cart-count">0</span>
+      </button>
+      <button class="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav">
+  <a href="#" data-page="home">🏠 Home</a>
+  <a href="#" data-page="menu">🍽️ Menu</a>
+  <a href="#" data-page="cart">🛒 Cart</a>
+  <a href="#" data-page="status">📦 Order Status</a>
+  <a href="#" data-page="admin">⚙️ Admin</a>
+  <a href="#" data-page="login">👤 Login</a>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container"></div>
+
+<!-- ═══════════ PAGE: HOME ═══════════ -->
+<div id="page-home" class="page">
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge"><span>🟢</span> Open Now · Serving Hot Food</div>
+        <h1 class="hero-title">
+          Your Campus<br>
+          <span class="highlight">Canteen,</span><br>
+          Reinvented.
+        </h1>
+        <p class="hero-sub">Skip the queue. Order online, track in real-time, and pick up fresh food from our campus canteen in minutes.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="hero-menu-btn">🍽️ Explore Menu</button>
+          <button class="btn-secondary" id="hero-status-btn">📦 Track Order</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item"><span class="stat-num">30+</span><span class="stat-label">Menu Items</span></div>
+          <div class="stat-item"><span class="stat-num">15 min</span><span class="stat-label">Avg. Ready Time</span></div>
+          <div class="stat-item"><span class="stat-num">4.8 ★</span><span class="stat-label">Student Rating</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-img-wrap">
+          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80" alt="Delicious food"
+               onerror="this.style.background='linear-gradient(135deg,#FF6B35,#FFB300)'">
+        </div>
+        <div class="hero-float-card card-1">
+          <span class="float-icon">🔥</span>
+          <div class="float-info">
+            <span class="float-label">Today's Special</span>
+            <span class="float-val">Chicken Biryani</span>
+          </div>
+        </div>
+        <div class="hero-float-card card-2">
+          <span class="float-icon">⚡</span>
+          <div class="float-info">
+            <span class="float-label">Ready in</span>
+            <span class="float-val">~15 mins</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="special-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <span class="section-tag">🌟 Featured</span>
+        <h2 class="section-title">Today's Special</h2>
+        <p class="section-sub">Chef's pick of the day — freshly made and waiting for you</p>
+      </div>
+      <div class="special-card">
+        <div class="special-content">
+          <div class="special-badge"><span>🔥</span> Limited Time Offer</div>
+          <h2 class="special-title">Chicken<br>Biryani Bowl</h2>
+          <p class="special-desc">Slow-cooked aromatic basmati rice layered with tender chicken, saffron, caramelized onions &amp; house spices. Served with raita and mirchi salan.</p>
+          <div class="special-price">
+            <span class="price-current">₹130</span>
+            <span class="price-old">₹180</span>
+            <span class="price-badge">Save ₹50</span>
+          </div>
+          <button class="btn-white" id="special-order-btn">Order Now 🛒</button>
+        </div>
+        <div class="special-visual">
+          <img class="special-img"
+               src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80"
+               alt="Chicken Biryani"
+               onerror="this.style.background='linear-gradient(135deg,#FF6B35,#FFB300)'">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="timings-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <span class="section-tag">🕐 Hours</span>
+        <h2 class="section-title">Canteen Timings</h2>
+        <p class="section-sub">Plan your visit — we're here when you need us most</p>
+      </div>
+      <div class="timings-grid">
+        <div class="timing-card">
+          <div class="timing-icon">☀️</div>
+          <div class="timing-day">Mon – Fri</div>
+          <div class="timing-hours">7:30 AM – 8:00 PM</div>
+          <span class="timing-status open">● Open Today</span>
+        </div>
+        <div class="timing-card">
+          <div class="timing-icon">🌤️</div>
+          <div class="timing-day">Saturday</div>
+          <div class="timing-hours">8:00 AM – 6:00 PM</div>
+          <span class="timing-status open">● Open Today</span>
+        </div>
+        <div class="timing-card">
+          <div class="timing-icon">🌙</div>
+          <div class="timing-day">Sunday</div>
+          <div class="timing-hours">10:00 AM – 4:00 PM</div>
+          <span class="timing-status open">● Brunch Hours</span>
+        </div>
+        <div class="timing-card">
+          <div class="timing-icon">🏖️</div>
+          <div class="timing-day">Holidays</div>
+          <div class="timing-hours">Closed</div>
+          <span class="timing-status closed">● Check Notice Board</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="nav-logo" style="margin-bottom:16px">
+            <div class="logo-icon">🍔</div>
+            BiteBuzz
+          </div>
+          <p>Your campus canteen, digitally reimagined. Order fresh food, track in real-time, and enjoy every bite.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#" class="footer-link" data-page="home">Home</a></li>
+            <li><a href="#" class="footer-link" data-page="menu">Menu</a></li>
+            <li><a href="#" class="footer-link" data-page="status">Track Order</a></li>
+            <li><a href="#" class="footer-link" data-page="admin">Admin Panel</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a>📍 Ground Floor, Main Block</a></li>
+            <li><a>📞 +91 98765 43210</a></li>
+            <li><a>📧 <span class="__cf_email__" data-cfemail="fa999b948e9f9f94ba999596969f9d9fd49f9e8f">[email&#160;protected]</span></a></li>
+            <li><a>⏰ Mon–Fri: 7:30–20:00</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 <span>BiteBuzz</span>. Built with ❤️ for students.</p>
+        <p>Made for Campus Life</p>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /page-home -->
+
+<!-- ═══════════ PAGE: MENU ═══════════ -->
+<div id="page-menu" class="page">
+
+  <div class="menu-header">
+    <div class="section-inner">
+      <span class="section-tag">🍽️ Full Menu</span>
+      <h1 class="section-title" style="margin-bottom:6px">What's Cooking Today?</h1>
+      <p class="section-sub">Fresh ingredients, great taste — choose your favourite!</p>
+    </div>
+    <div class="category-tabs">
+      <button class="cat-tab active" data-cat="all"><span class="cat-emoji">🍴</span> All Items</button>
+      <button class="cat-tab" data-cat="snacks"><span class="cat-emoji">🍿</span> Snacks</button>
+      <button class="cat-tab" data-cat="meals"><span class="cat-emoji">🍱</span> Meals</button>
+      <button class="cat-tab" data-cat="drinks"><span class="cat-emoji">🥤</span> Drinks</button>
+    </div>
+  </div>
+
+  <div class="menu-grid-section">
+    <div class="menu-section-inner">
+      <div id="menu-grid-container"></div>
+    </div>
+  </div>
+
+  <!-- Floating Cart Bar -->
+  <div class="cart-bar">
+    <div class="cart-bar-info">
+      <div class="cart-bar-count">0 items</div>
+      <div class="cart-bar-total">₹0</div>
+    </div>
+    <button class="cart-bar-btn">View Cart →</button>
+  </div>
+
+</div><!-- /page-menu -->
+
+<!-- ═══════════ PAGE: CART ═══════════ -->
+<div id="page-cart" class="page cart-page">
+
+  <div class="cart-page-header">
+    <div style="max-width:1100px;margin:0 auto">
+      <h1>🛒 Your Cart</h1>
+      <p style="color:var(--text-mid);margin-top:6px">Review your order before checkout</p>
+    </div>
+  </div>
+
+  <div class="cart-layout">
+    <div class="cart-items-section">
+      <div id="cart-empty" class="cart-empty" style="display:none">
+        <div class="empty-icon">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Looks like you haven't added anything yet!</p>
+        <button class="btn-primary" onclick="navigate('menu')">Browse Menu 🍽️</button>
+      </div>
+      <div id="cart-items"></div>
+    </div>
+
+    <div id="order-summary" class="order-summary" style="display:none">
+      <h3>Order Summary</h3>
+      <div class="summary-row">
+        <span>Subtotal</span><span id="summary-subtotal">₹0</span>
+      </div>
+      <div class="summary-row">
+        <span>GST (5%)</span><span id="summary-tax">₹0</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span><span class="amount" id="summary-total">₹0</span>
+      </div>
+      <div class="payment-section">
+        <label>Payment Method</label>
+        <div class="payment-opts">
+          <div class="pay-opt" data-value="cash">
+            <span class="pay-icon">💵</span><span>Cash on Counter</span><div class="pay-radio"></div>
+          </div>
+          <div class="pay-opt" data-value="online">
+            <span class="pay-icon">📱</span><span>Online Payment</span><div class="pay-radio"></div>
+          </div>
+          <div class="pay-opt" data-value="upi">
+            <span class="pay-icon">💳</span><span>UPI / Wallet</span><div class="pay-radio"></div>
+          </div>
+        </div>
+      </div>
+      <button class="checkout-btn" id="checkout-btn">Place Order 🚀</button>
+    </div>
+  </div>
+
+  <!-- Order Confirmation Modal -->
+  <div id="confirm-modal-overlay" class="modal-overlay">
+    <div class="confirm-modal">
+      <div class="confirm-animation">🎉</div>
+      <h2 class="confirm-title">Order Placed!</h2>
+      <p class="confirm-sub">Your food is being prepared. Keep track with your token number.</p>
+      <div class="token-box">
+        <div class="token-label">Your Order Token</div>
+        <div class="token-num" id="confirm-token">C1234</div>
+      </div>
+      <div class="confirm-actions">
+        <button class="btn-outline" id="close-modal-btn">Go Home</button>
+        <button class="btn-primary" id="view-status-btn">Track Order 📦</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-cart -->
+
+<!-- ═══════════ PAGE: ORDER STATUS ═══════════ -->
+<div id="page-status" class="page status-page">
+
+  <div class="status-hero">
+    <div style="max-width:700px;margin:0 auto">
+      <h1>📦 Track Your Order</h1>
+      <p>Enter your token number to see live order status</p>
+      <div class="token-search">
+        <input type="text" id="token-input" class="token-input" placeholder="Enter token e.g. 65B282" maxlength="6">
+        <button class="btn-primary" id="lookup-btn">Track 🔍</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-content">
+    <div id="status-result" style="display:none"></div>
+  </div>
+
+</div><!-- /page-status -->
+
+<!-- ═══════════ PAGE: ADMIN ═══════════ -->
+<div id="page-admin" class="page admin-page">
+
+  <div id="admin-login-panel" class="admin-login">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">⚙️</div>
+        <h2>Admin Panel</h2>
+        <p>Canteen management portal</p>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="admin-user" class="form-input" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="admin-pass" class="form-input" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="admin-login-btn" style="width:100%;justify-content:center;margin-top:4px">Login →</button>
+      <p class="login-hint">Demo: admin / canteen123</p>
+    </div>
+  </div>
+
+  <div id="admin-dashboard-panel" class="admin-dashboard" style="display:none">
+    <div class="admin-inner">
+
+      <div class="admin-header-bar">
+        <h2>📊 Order Dashboard</h2>
+        <button class="btn-secondary" id="admin-logout-btn" style="padding:10px 20px">Logout</button>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat">
+          <div class="stat-val">0</div><div class="stat-lbl">Total Orders</div>
+        </div>
+        <div class="admin-stat">
+          <div class="stat-val">0</div><div class="stat-lbl">Active Orders</div>
+        </div>
+        <div class="admin-stat">
+          <div class="stat-val">₹0</div><div class="stat-lbl">Total Revenue</div>
+        </div>
+        <div class="admin-stat">
+          <div class="stat-val">0</div><div class="stat-lbl">Delivered</div>
+        </div>
+        <div class="admin-stat" style="border-color:#ef9a9a">
+          <div class="stat-val" style="color:#c62828">0</div><div class="stat-lbl">Cancelled</div>
+        </div>
+      </div>
+
+      <div class="admin-orders-table">
+        <div class="table-header">
+          <h3>All Orders</h3>
+          <div class="filter-btns">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="preparing">Preparing</button>
+            <button class="filter-btn" data-filter="ready">Ready</button>
+            <button class="filter-btn" data-filter="outfor">Out for Delivery</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+            <button class="filter-btn" data-filter="cancelled" style="border-color:#ef9a9a;color:#c62828">✕ Cancelled</button>
+          </div>
+        </div>
+        <div class="orders-list" id="admin-orders-list">
+          <div class="no-orders">
+            <div class="empty-icon">📭</div>
+            <p>No orders yet. Orders placed by students will appear here.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-admin -->
+
+<!-- STUDENT LOGIN PAGE -->
+<div id="page-login" class="page auth-container">
+  <div class="auth-card">
+
+    <!-- Icon Header -->
+    <div class="auth-icon-wrap">🎓</div>
+
+    <!-- Tab Switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="auth-login-form">
+      <div class="auth-title">Student Login</div>
+      <div class="auth-sub">Access your canteen account</div>
+
+      <div class="auth-group">
+        <label>Student ID</label>
+        <input id="login-id" type="text" placeholder="e.g. STU2024001">
+      </div>
+
+      <div class="auth-group">
+        <label>Password</label>
+        <input id="login-pass" type="password" placeholder="••••••••">
+      </div>
+
+      <button id="student-login-btn" class="auth-btn">Login</button>
+
+      <div class="auth-switch">
+        Don't have an account? <span onclick="switchAuthTab('register')">Register here</span>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="auth-register-form" style="display:none">
+      <div class="auth-title">Create Account</div>
+      <div class="auth-sub">Register as a new student</div>
+
+      <div class="auth-group">
+        <label>Full Name</label>
+        <input id="reg-name" type="text" placeholder="Your full name">
+      </div>
+
+      <div class="auth-group">
+        <label>Student ID</label>
+        <input id="reg-id" type="text" placeholder="e.g. STU2024001">
+      </div>
+
+      <div class="auth-group">
+        <label>Department <span style="color:#9aa4c7;font-size:11px">(optional)</span></label>
+        <input id="reg-dept" type="text" placeholder="e.g. Computer Science">
+      </div>
+
+      <div class="auth-group">
+        <label>Password</label>
+        <input id="reg-pass" type="password" placeholder="Min. 6 characters">
+      </div>
+
+      <button id="student-register-btn" class="auth-btn">Register</button>
+
+      <div class="auth-switch">
+        Already have an account? <span onclick="switchAuthTab('login')">Login here</span>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /page-login -->
+
+<script src="app.js"></script>
+</body>
+</html>
