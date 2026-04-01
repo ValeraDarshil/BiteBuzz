@@ -1902,7 +1902,7 @@
 // ================= BACKEND CONFIG =================
 
 
-const API = "https://bitebuzz-5ekc.onrender.com";
+const API = "https://bitebuzz-5ekc.onrender.com/api";
 
 function getToken() {
   return localStorage.getItem("token");
