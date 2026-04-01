@@ -166,8 +166,8 @@
 
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/order');
-const User = require('../models/user');
+const Order = require('../models/Order');
+const User = require('../models/User');
 const auth = require('../middleware/authMiddleware');
 const admin = require('../middleware/adminMiddleware');
 
