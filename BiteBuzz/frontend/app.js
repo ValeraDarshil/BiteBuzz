@@ -1902,7 +1902,7 @@
 // ================= BACKEND CONFIG =================
 
 
-const API = "http://localhost:5000/api";
+const API = "https://bitebuzz-5ekc.onrender.com";
 
 function getToken() {
   return localStorage.getItem("token");
@@ -2017,6 +2017,21 @@ function getLoggedInUser() {
 }
 
 // ═══════════════════════════════════════════════
+// ITEM AVAILABILITY MANAGEMENT
+// ═══════════════════════════════════════════════
+function getItemAvailability(itemId) {
+  const availability = JSON.parse(localStorage.getItem('itemAvailability') || '{}');
+  return availability[itemId] !== false; // default: available
+}
+
+function setItemAvailability(itemId, available) {
+  const availability = JSON.parse(localStorage.getItem('itemAvailability') || '{}');
+  availability[itemId] = available;
+  localStorage.setItem('itemAvailability', JSON.stringify(availability));
+  showToast(available ? '✅ Item marked available' : '❌ Item marked unavailable', 'success');
+}
+
+// ═══════════════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════════════
 function showToast(msg, type, duration) {
@@ -2082,21 +2097,46 @@ function updateNavUI() {
     mobileBtn.textContent = user ? ('👤 ' + (user.name || user.studentId)) : '👤 Login';
   }
 
-  // Toggle Order Status / Admin nav links based on user role
+  // Toggle Order Status / Menu Management nav links based on user role
   const statusLinks = $$('[data-page="status"]');
   const adminLinks  = $$('[data-page="admin"]');
 
   if (STATE.adminLoggedIn) {
-    // Admin logged in → Show Admin, Hide Order Status
-    statusLinks.forEach(link => link.style.display = 'none');
-    adminLinks.forEach(link => link.style.display = '');
+    // Admin logged in → Change to "Menu Management", Hide Admin link
+    statusLinks.forEach(link => {
+      link.style.display = '';
+      // Check current text to determine format (desktop vs mobile with emoji)
+      const currentText = link.textContent.trim();
+      if (currentText.startsWith('📦') || currentText.startsWith('📋')) {
+        link.textContent = '📋 Menu Management';
+      } else {
+        link.textContent = 'Menu Management';
+      }
+    });
+    adminLinks.forEach(link => link.style.display = 'none');
   } else if (user) {
     // Student logged in → Show Order Status, Hide Admin
-    statusLinks.forEach(link => link.style.display = '');
+    statusLinks.forEach(link => {
+      link.style.display = '';
+      const currentText = link.textContent.trim();
+      if (currentText.startsWith('📦') || currentText.startsWith('📋')) {
+        link.textContent = '📦 Order Status';
+      } else {
+        link.textContent = 'Order Status';
+      }
+    });
     adminLinks.forEach(link => link.style.display = 'none');
   } else {
-    // Not logged in → Show both
-    statusLinks.forEach(link => link.style.display = '');
+    // Not logged in → Show both with default text
+    statusLinks.forEach(link => {
+      link.style.display = '';
+      const currentText = link.textContent.trim();
+      if (currentText.startsWith('📦') || currentText.startsWith('📋')) {
+        link.textContent = '📦 Order Status';
+      } else {
+        link.textContent = 'Order Status';
+      }
+    });
     adminLinks.forEach(link => link.style.display = '');
   }
 
@@ -2417,6 +2457,15 @@ function removeItemCompletely(id) {
   renderCart();
 }
 
+function removeUnavailableItems() {
+  STATE.cart = STATE.cart.filter(cartItem => getItemAvailability(cartItem.id));
+  updateCartUI();
+  renderCart();
+  showToast('Unavailable items removed from cart', 'success');
+}
+
+window.removeUnavailableItems = removeUnavailableItems;
+
 // ═══════════════════════════════════════════════
 // MENU RENDER
 // ═══════════════════════════════════════════════
@@ -2435,17 +2484,25 @@ function renderMenu(filter) {
     const grid = mkEl('div', 'menu-grid');
 
     items.forEach(item => {
+      const isAvailable = getItemAvailability(item.id);
       const cartItem = STATE.cart.find(i => i.id === item.id);
       const qty      = cartItem ? cartItem.qty : 0;
-      const card     = mkEl('div', 'food-card');
-      const qtyHTML  = qty === 0
-        ? '<button class="add-btn" data-id="' + item.id + '">Add +</button>'
-        : '<div class="qty-control"><button class="qty-btn minus" data-id="' + item.id + '">−</button><span class="qty-num">' + qty + '</span><button class="qty-btn plus" data-id="' + item.id + '">+</button></div>';
+      
+      // Show "Out of Stock" badge if unavailable, else show normal add/qty controls
+      const qtyHTML  = !isAvailable
+        ? '<div class="out-of-stock-badge">Out of Stock</div>'
+        : qty === 0
+          ? '<button class="add-btn" data-id="' + item.id + '">Add +</button>'
+          : '<div class="qty-control"><button class="qty-btn minus" data-id="' + item.id + '">−</button><span class="qty-num">' + qty + '</span><button class="qty-btn plus" data-id="' + item.id + '">+</button></div>';
+
+      const cardClass = 'food-card' + (!isAvailable ? ' unavailable' : '');
+      const card     = mkEl('div', cardClass);
 
       card.innerHTML =
         '<div class="food-card-img">' +
           '<img src="' + item.img + '" alt="' + item.name + '" loading="lazy" onerror="this.style.background=\'linear-gradient(135deg,#FF6B35,#FFB300)\';this.style.opacity=\'0.6\'">' +
           '<div class="food-veg-badge ' + (item.veg ? 'veg' : 'non-veg') + '"></div>' +
+          (!isAvailable ? '<div class="unavailable-overlay">UNAVAILABLE</div>' : '') +
         '</div>' +
         '<div class="food-card-body">' +
           '<div class="food-card-name">' + item.name + '</div>' +
@@ -2523,12 +2580,27 @@ function renderCart() {
     summaryEl.style.display = 'block';
     itemsEl.innerHTML       = '';
 
+    // Check for unavailable items in cart
+    const unavailableItems = STATE.cart.filter(cartItem => !getItemAvailability(cartItem.id));
+    if (unavailableItems.length > 0) {
+      const unavailBanner = mkEl('div', 'cart-unavail-banner');
+      unavailBanner.innerHTML =
+        '<div class="cub-icon">⚠️</div>' +
+        '<div class="cub-body">' +
+          '<div class="cub-title">Items No Longer Available</div>' +
+          '<div class="cub-desc">Some items in your cart are now out of stock. Please remove them before placing order.</div>' +
+        '</div>' +
+        '<button class="cub-btn" onclick="removeUnavailableItems()">Remove All</button>';
+      itemsEl.appendChild(unavailBanner);
+    }
+
     STATE.cart.forEach(item => {
-      const div = mkEl('div', 'cart-item');
+      const isAvailable = getItemAvailability(item.id);
+      const div = mkEl('div', 'cart-item' + (!isAvailable ? ' cart-item-unavailable' : ''));
       div.innerHTML =
         '<div class="cart-item-img"><img src="' + item.img + '" alt="' + item.name + '" onerror="this.style.background=\'linear-gradient(135deg,#FF6B35,#FFB300)\'"></div>' +
         '<div class="cart-item-info">' +
-          '<div class="cart-item-name">' + item.name + '</div>' +
+          '<div class="cart-item-name">' + item.name + (!isAvailable ? ' <span class="unavail-tag">Out of Stock</span>' : '') + '</div>' +
           '<div class="cart-item-cat">' + (item.veg ? '🟢 Veg' : '🔴 Non-Veg') + '</div>' +
           '<div class="cart-item-price">' + fmt(item.price) + ' × ' + item.qty + ' = ' + fmt(item.price * item.qty) + '</div>' +
         '</div>' +
@@ -2554,7 +2626,7 @@ function renderCart() {
     $$('#cart-items .remove-btn').forEach(b    => b.addEventListener('click', () => { removeItemCompletely(+b.dataset.id); }));
 
     const checkoutBtn = $('#checkout-btn');
-    if (checkoutBtn) checkoutBtn.disabled = suspended;
+    if (checkoutBtn) checkoutBtn.disabled = suspended || unavailableItems.length > 0;
   }
 }
 
@@ -2702,6 +2774,19 @@ async function placeOrder() {
     return;
   }
 
+  // CHECK: Validate all items are still available
+  const unavailableItems = STATE.cart.filter(cartItem => !getItemAvailability(cartItem.id));
+  if (unavailableItems.length > 0) {
+    const itemNames = unavailableItems.map(i => i.name).join(', ');
+    showToast('⚠️ Some items are now unavailable: ' + itemNames + '. Please remove them from cart.', 'error', 5000);
+    
+    // Auto-remove unavailable items and refresh cart
+    STATE.cart = STATE.cart.filter(cartItem => getItemAvailability(cartItem.id));
+    updateCartUI();
+    renderCart();
+    return;
+  }
+
   const suspInfo = getSuspensionInfo();
   if (suspInfo.suspended) {
     showToast('🚫 Account suspended. ' + suspInfo.daysLeft + ' day' + (suspInfo.daysLeft !== 1 ? 's' : '') + ' remaining.', 'error', 4500);
@@ -2770,18 +2855,29 @@ function spawnConfetti() {
 // ORDER STATUS PAGE
 // ═══════════════════════════════════════════════
 function renderStatusPage() {
+  const studentView = document.getElementById('status-student-view');
+  const adminView = document.getElementById('status-admin-view');
   const resultEl   = document.getElementById('status-result');
   const tokenInput = document.getElementById('token-input');
-  if (!resultEl) return;
-  if (tokenInput) tokenInput.value = '';
-  resultEl.style.display = 'none';
-  resultEl.innerHTML = '';
-
-  // Block access for admin users
+  
+  if (!studentView || !adminView) return;
+  
+  // Admin: Show Menu Management
   if (STATE.adminLoggedIn) {
-    resultEl.style.display = 'block';
-    resultEl.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-mid)"><div style="font-size:3rem;margin-bottom:16px">🚫</div><h3 style="margin-bottom:8px;color:var(--text-dark)">Admin Access Only</h3><p>Order tracking is for students only. Please use the Admin Dashboard to manage orders.</p></div>';
+    studentView.style.display = 'none';
+    adminView.style.display = 'block';
+    renderAdminMenuPage();
     return;
+  }
+  
+  // Student: Show Order Tracking
+  studentView.style.display = 'block';
+  adminView.style.display = 'none';
+  
+  if (tokenInput) tokenInput.value = '';
+  if (resultEl) {
+    resultEl.style.display = 'none';
+    resultEl.innerHTML = '';
   }
 
   // Auto-load ALL undelivered orders for logged-in student
@@ -2990,6 +3086,7 @@ function renderAdmin() {
     const storedUser = getLoggedInUser();
     if (storedUser && storedUser.role === 'admin') {
       STATE.adminLoggedIn = true;
+      updateNavUI(); // Update nav to show Menu Management
     }
   }
 
@@ -3139,6 +3236,41 @@ window.updateOrderStatus = async function(id, status) {
 };
 
 window.showCancelConfirm = showCancelConfirm;
+
+// ═══════════════════════════════════════════════
+// ADMIN MENU AVAILABILITY MANAGEMENT
+// ═══════════════════════════════════════════════
+// Render menu availability in dedicated page (for admin in Menu Management)
+function renderAdminMenuPage() {
+  const container = document.getElementById('admin-menu-list-page');
+  if (!container) return;
+  
+  const allItems = [...MENU.snacks, ...MENU.meals, ...MENU.drinks];
+  
+  container.innerHTML = allItems.map(item => {
+    const isAvailable = getItemAvailability(item.id);
+    return '<div class="admin-menu-item">' +
+      '<div class="ami-info">' +
+        '<img src="' + item.img + '" alt="' + item.name + '" onerror="this.style.background=\'linear-gradient(135deg,#ff6b35,#ffb300)\'">' +
+        '<div>' +
+          '<div class="ami-name">' + item.name + '</div>' +
+          '<div class="ami-price">' + fmt(item.price) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button class="availability-toggle ' + (isAvailable ? 'available' : 'unavailable') + '" onclick="toggleAvailability(' + item.id + ')">' +
+        (isAvailable ? '✓ Available' : '✕ Unavailable') +
+      '</button>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleAvailability(itemId) {
+  const current = getItemAvailability(itemId);
+  setItemAvailability(itemId, !current);
+  renderAdminMenuPage();
+}
+
+window.toggleAvailability = toggleAvailability;
 
 // ═══════════════════════════════════════════════
 // LOGIN PAGE

@@ -319,19 +319,35 @@
 <!-- ═══════════ PAGE: ORDER STATUS ═══════════ -->
 <div id="page-status" class="page status-page">
 
-  <div class="status-hero">
-    <div style="max-width:700px;margin:0 auto">
-      <h1>📦 Track Your Order</h1>
-      <p>Enter your token number to see live order status</p>
-      <div class="token-search">
-        <input type="text" id="token-input" class="token-input" placeholder="Enter token e.g. 65B282" maxlength="6">
-        <button class="btn-primary" id="lookup-btn">Track 🔍</button>
+  <!-- STUDENT: Order Tracking -->
+  <div id="status-student-view">
+    <div class="status-hero">
+      <div style="max-width:700px;margin:0 auto">
+        <h1>📦 Track Your Order</h1>
+        <p>Enter your token number to see live order status</p>
+        <div class="token-search">
+          <input type="text" id="token-input" class="token-input" placeholder="Enter token e.g. 65B282" maxlength="6">
+          <button class="btn-primary" id="lookup-btn">Track 🔍</button>
+        </div>
       </div>
+    </div>
+
+    <div class="status-content">
+      <div id="status-result" style="display:none"></div>
     </div>
   </div>
 
-  <div class="status-content">
-    <div id="status-result" style="display:none"></div>
+  <!-- ADMIN: Menu Management -->
+  <div id="status-admin-view" style="display:none">
+    <div class="menu-management-page">
+      <div class="mm-header">
+        <h1>📋 Menu Management</h1>
+        <p>Control item availability for the student menu</p>
+      </div>
+      <div class="mm-content">
+        <div id="admin-menu-list-page"></div>
+      </div>
+    </div>
   </div>
 
 </div><!-- /page-status -->
