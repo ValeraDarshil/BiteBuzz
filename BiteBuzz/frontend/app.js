@@ -2944,6 +2944,24 @@ async function loadOrderById(orderId) {
   renderOrderStatusInto(res, wrapper);
 }
 
+async function refreshOrderStatus() {
+  const btn = document.getElementById('refresh-status-btn');
+  if (btn) btn.classList.add('spinning');
+
+  const tokenInput = document.getElementById('token-input');
+  const val = tokenInput ? tokenInput.value.trim().toUpperCase().replace('#', '') : '';
+
+  if (val) {
+    await loadMyOrders();
+  } else {
+    await loadAllActiveOrders();
+  }
+
+  if (btn) {
+    setTimeout(() => btn.classList.remove('spinning'), 600);
+  }
+}
+
 async function loadMyOrders() {
   const tokenInput = document.getElementById('token-input');
   const val = tokenInput ? tokenInput.value.trim().toUpperCase().replace('#','') : '';
