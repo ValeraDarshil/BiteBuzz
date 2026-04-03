@@ -3149,6 +3149,17 @@ function renderAdmin() {
   }
 }
 
+async function refreshAdminDashboard() {
+  const btn = document.getElementById('refresh-admin-btn');
+  if (btn) btn.classList.add('spinning');
+
+  await renderAdminOrders(STATE.currentFilter);
+
+  if (btn) {
+    setTimeout(() => btn.classList.remove('spinning'), 600);
+  }
+}
+
 async function renderAdminOrders(filter) {
   filter = filter || 'all';
   STATE.currentFilter = filter;
