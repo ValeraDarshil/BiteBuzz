@@ -2054,6 +2054,36 @@ function applyDarkMode() {
 // ═══════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════
+// Auto-refresh interval handles
+var _autoRefreshInterval = null;
+var AUTO_REFRESH_MS = 30000; // 30 seconds
+
+function startAutoRefresh(page) {
+  stopAutoRefresh(); // clear any existing
+  if (page === 'status') {
+    _autoRefreshInterval = setInterval(function() {
+      if (STATE.currentPage !== 'status') { stopAutoRefresh(); return; }
+      if (STATE.adminLoggedIn) return; // admin sees their own dashboard
+      refreshOrderStatus();
+    }, AUTO_REFRESH_MS);
+  } else if (page === 'admin') {
+    _autoRefreshInterval = setInterval(function() {
+      if (STATE.currentPage !== 'admin') { stopAutoRefresh(); return; }
+      var dash = document.getElementById('admin-dashboard-panel');
+      if (dash && dash.style.display !== 'none') {
+        refreshAdminDashboard();
+      }
+    }, AUTO_REFRESH_MS);
+  }
+}
+
+function stopAutoRefresh() {
+  if (_autoRefreshInterval) {
+    clearInterval(_autoRefreshInterval);
+    _autoRefreshInterval = null;
+  }
+}
+
 function navigate(page) {
   $$('.page').forEach(p => p.classList.remove('active'));
   const target = $('#page-' + page);
@@ -2067,6 +2097,13 @@ function navigate(page) {
   if (page === 'status') renderStatusPage();
   if (page === 'admin')  renderAdmin();
   if (page === 'login')  renderLoginPage();
+
+  // Start auto-refresh for status/admin pages, stop for all others
+  if (page === 'status' || page === 'admin') {
+    startAutoRefresh(page);
+  } else {
+    stopAutoRefresh();
+  }
 
   updateNavUI();
 }
