@@ -2063,15 +2063,15 @@ function startAutoRefresh(page) {
   if (page === 'status') {
     _autoRefreshInterval = setInterval(function() {
       if (STATE.currentPage !== 'status') { stopAutoRefresh(); return; }
-      if (STATE.adminLoggedIn) return; // admin sees their own dashboard
-      refreshOrderStatus();
+      if (STATE.adminLoggedIn) return;
+      loadAllActiveOrders(true); // silent=true — no flicker
     }, AUTO_REFRESH_MS);
   } else if (page === 'admin') {
     _autoRefreshInterval = setInterval(function() {
       if (STATE.currentPage !== 'admin') { stopAutoRefresh(); return; }
       var dash = document.getElementById('admin-dashboard-panel');
       if (dash && dash.style.display !== 'none') {
-        refreshAdminDashboard();
+        renderAdminOrders(STATE.currentFilter, true); // silent=true — no flicker
       }
     }, AUTO_REFRESH_MS);
   }
@@ -2924,39 +2924,64 @@ function renderStatusPage() {
 }
 
 // Load all active orders for the currently logged-in student from backend
-async function loadAllActiveOrders() {
+async function loadAllActiveOrders(silent) {
   const resultEl = document.getElementById('status-result');
   if (!resultEl) return;
-
-  // Block admin users
   if (STATE.adminLoggedIn) return;
 
-  resultEl.style.display = 'block';
-  resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-mid)">⏳ Loading your orders...</div>';
+  // First load — show loader
+  if (!silent) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-mid)">⏳ Loading your orders...</div>';
+  }
 
-  // Fetch orders from backend - this returns only the logged-in student's orders
   const res = await apiRequest('/orders/my');
-  
+
   if (res.error || !Array.isArray(res)) {
-    resultEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)"><div style="font-size:2.5rem;margin-bottom:12px">📭</div><p>No orders found.</p></div>';
+    if (!silent) resultEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)"><div style="font-size:2.5rem;margin-bottom:12px">📭</div><p>No orders found.</p></div>';
     return;
   }
 
-  // Only show orders that are NOT cancelled and NOT delivered
   const toShow = res.filter(r => r && r._id && r.status !== 'Delivered' && r.status !== 'Cancelled');
-
-  // Sort newest first
   toShow.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   if (toShow.length === 0) {
-    resultEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)"><div style="font-size:2.5rem;margin-bottom:12px">📭</div><p>No active orders found.</p></div>';
+    if (!silent) resultEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)"><div style="font-size:2.5rem;margin-bottom:12px">📭</div><p>No active orders found.</p></div>';
     return;
   }
 
+  // SILENT mode: only patch status if order list is identical
+  if (silent) {
+    const existingCards = resultEl.querySelectorAll('[data-order-id]');
+    const existingIds = Array.from(existingCards).map(el => el.dataset.orderId);
+    const newIds = toShow.map(o => o._id);
+    const sameList = existingIds.length === newIds.length && newIds.every((id, i) => id === existingIds[i]);
+    if (sameList && existingCards.length > 0) {
+      // Just patch changed statuses — zero flicker
+      toShow.forEach(order => {
+        const card = resultEl.querySelector('[data-order-id="' + order._id + '"]');
+        if (!card) return;
+        const badge = card.querySelector('.scard-status-text');
+        if (badge && badge.textContent.trim() !== order.status) badge.textContent = order.status;
+        const steps = ['Pending','Preparing','Ready','Out for Delivery','Delivered'];
+        const curIdx = steps.indexOf(order.status);
+        card.querySelectorAll('.status-step').forEach((stepEl, i) => {
+          stepEl.classList.toggle('step-done', i < curIdx);
+          stepEl.classList.toggle('step-active', i === curIdx);
+          stepEl.classList.toggle('step-upcoming', i > curIdx);
+        });
+      });
+      return;
+    }
+    // List changed — fall through to full render
+  }
+
+  resultEl.style.display = 'block';
   resultEl.innerHTML = '';
   toShow.forEach(order => {
     const wrapper = document.createElement('div');
     wrapper.style.marginBottom = '20px';
+    wrapper.setAttribute('data-order-id', order._id);
     resultEl.appendChild(wrapper);
     renderOrderStatusInto(order, wrapper);
   });
@@ -3197,7 +3222,7 @@ async function refreshAdminDashboard() {
   }
 }
 
-async function renderAdminOrders(filter) {
+async function renderAdminOrders(filter, silent) {
   filter = filter || 'all';
   STATE.currentFilter = filter;
 
@@ -3206,7 +3231,10 @@ async function renderAdminOrders(filter) {
   const list = document.getElementById('admin-orders-list');
   if (!list) return;
 
-  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)">⏳ Loading orders...</div>';
+  // Only show loader on first/manual load — not on silent background refresh
+  if (!silent) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)">⏳ Loading orders...</div>';
+  }
 
   // BUG FIX: use /admin/all which is before /:id in the route file
   const res = await apiRequest('/orders/admin/all');
