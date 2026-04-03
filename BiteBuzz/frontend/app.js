@@ -2929,7 +2929,7 @@ async function loadAllActiveOrders(silent) {
   if (!resultEl) return;
   if (STATE.adminLoggedIn) return;
 
-  // First load — show loader
+  // Show loader only on first/manual load
   if (!silent) {
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-mid)">⏳ Loading your orders...</div>';
@@ -2950,38 +2950,12 @@ async function loadAllActiveOrders(silent) {
     return;
   }
 
-  // SILENT mode: only patch status if order list is identical
-  if (silent) {
-    const existingCards = resultEl.querySelectorAll('[data-order-id]');
-    const existingIds = Array.from(existingCards).map(el => el.dataset.orderId);
-    const newIds = toShow.map(o => o._id);
-    const sameList = existingIds.length === newIds.length && newIds.every((id, i) => id === existingIds[i]);
-    if (sameList && existingCards.length > 0) {
-      // Just patch changed statuses — zero flicker
-      toShow.forEach(order => {
-        const card = resultEl.querySelector('[data-order-id="' + order._id + '"]');
-        if (!card) return;
-        const badge = card.querySelector('.scard-status-text');
-        if (badge && badge.textContent.trim() !== order.status) badge.textContent = order.status;
-        const steps = ['Pending','Preparing','Ready','Out for Delivery','Delivered'];
-        const curIdx = steps.indexOf(order.status);
-        card.querySelectorAll('.status-step').forEach((stepEl, i) => {
-          stepEl.classList.toggle('step-done', i < curIdx);
-          stepEl.classList.toggle('step-active', i === curIdx);
-          stepEl.classList.toggle('step-upcoming', i > curIdx);
-        });
-      });
-      return;
-    }
-    // List changed — fall through to full render
-  }
-
+  // Silent mode: re-render without loader — fast, no visible flash
   resultEl.style.display = 'block';
   resultEl.innerHTML = '';
   toShow.forEach(order => {
     const wrapper = document.createElement('div');
     wrapper.style.marginBottom = '20px';
-    wrapper.setAttribute('data-order-id', order._id);
     resultEl.appendChild(wrapper);
     renderOrderStatusInto(order, wrapper);
   });
@@ -3194,6 +3168,7 @@ function renderAdmin() {
           showToast('Welcome, ' + (res.user.name || 'Admin') + '!', 'success');
           updateNavUI();
           renderAdmin();
+          startAutoRefresh('admin');
         } else {
           showToast(res.msg || 'Invalid credentials', 'error');
         }
@@ -3208,6 +3183,7 @@ function renderAdmin() {
     loginPanel.style.display = 'none';
     dashboard.style.display = 'block';
     renderAdminOrders(STATE.currentFilter);
+    startAutoRefresh('admin');
   }
 }
 
@@ -3231,7 +3207,7 @@ async function renderAdminOrders(filter, silent) {
   const list = document.getElementById('admin-orders-list');
   if (!list) return;
 
-  // Only show loader on first/manual load — not on silent background refresh
+  // Show loader only on first/manual load
   if (!silent) {
     list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-mid)">⏳ Loading orders...</div>';
   }
