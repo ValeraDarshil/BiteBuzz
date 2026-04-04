@@ -195,7 +195,10 @@
 //   STATE.currentPage = page;
 //   $$('.nav-links a, .mobile-nav a').forEach(function(a) { a.classList.toggle('active', a.dataset.page === page); });
 //   $('.mobile-nav').classList.remove('open');
-//   if (page === 'menu')   renderMenu('all');
+//   if (page === 'menu') {
+    showMenuSkeleton();
+    setTimeout(() => renderMenu('all'), 120); // brief skeleton flash then real render
+  }
 //   if (page === 'cart')   renderCart();
 //   if (page === 'status') renderStatusPage();
 //   if (page === 'admin')  renderAdmin();
@@ -245,7 +248,31 @@
 // // ═══════════════════════════════════════════════
 // // MENU RENDER
 // // ═══════════════════════════════════════════════
-// function renderMenu(filter) {
+// function showMenuSkeleton() {
+  const container = $('#menu-grid-container');
+  if (!container) return;
+  // Show 2 category sections worth of skeleton cards
+  let html = '';
+  for (let s = 0; s < 2; s++) {
+    html += '<div class="menu-category">';
+    html += '<div class="category-label"><span class="skeleton" style="width:140px;height:22px;display:inline-block;border-radius:6px"></span></div>';
+    html += '<div class="skeleton-menu-grid">';
+    for (let i = 0; i < 4; i++) {
+      html += '<div class="skeleton-card">' +
+        '<div class="skeleton skeleton-card-img"></div>' +
+        '<div class="skeleton-card-body">' +
+          '<div class="skeleton skeleton-line thick medium"></div>' +
+          '<div class="skeleton skeleton-line full"></div>' +
+          '<div class="skeleton skeleton-line short"></div>' +
+        '</div>' +
+      '</div>';
+    }
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderMenu(filter) {
 //   var container = $('#menu-grid-container');
 //   container.innerHTML = '';
 //   var cats = filter === 'all' ? Object.entries(MENU) : [[filter, MENU[filter]]];
