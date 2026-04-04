@@ -196,9 +196,9 @@
 //   $$('.nav-links a, .mobile-nav a').forEach(function(a) { a.classList.toggle('active', a.dataset.page === page); });
 //   $('.mobile-nav').classList.remove('open');
 //   if (page === 'menu') {
-    showMenuSkeleton();
-    setTimeout(() => renderMenu('all'), 120); // brief skeleton flash then real render
-  }
+//     showMenuSkeleton();
+//     setTimeout(() => renderMenu('all'), 120);
+//   }
 //   if (page === 'cart')   renderCart();
 //   if (page === 'status') renderStatusPage();
 //   if (page === 'admin')  renderAdmin();
@@ -248,10 +248,9 @@
 // // ═══════════════════════════════════════════════
 // // MENU RENDER
 // // ═══════════════════════════════════════════════
-// function showMenuSkeleton() {
+function showMenuSkeleton() {
   const container = $('#menu-grid-container');
   if (!container) return;
-  // Show 2 category sections worth of skeleton cards
   let html = '';
   for (let s = 0; s < 2; s++) {
     html += '<div class="menu-category">';
@@ -1040,7 +1039,10 @@ function renderMenu(filter) {
 //   $$('.nav-links a, .mobile-nav a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
 //   $('.mobile-nav').classList.remove('open');
 
-//   if (page === 'menu')   renderMenu('all');
+//   if (page === 'menu') {
+    showMenuSkeleton();
+    setTimeout(() => renderMenu('all'), 120);
+  }
 //   if (page === 'cart')   renderCart();
 //   if (page === 'status') renderStatusPage();
 //   if (page === 'admin')  renderAdmin();
