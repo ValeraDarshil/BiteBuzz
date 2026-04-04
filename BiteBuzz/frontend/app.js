@@ -2056,7 +2056,62 @@ function applyDarkMode() {
 // ═══════════════════════════════════════════════
 // Auto-refresh interval handles
 var _autoRefreshInterval = null;
-var AUTO_REFRESH_MS = 30000; // 30 seconds
+var AUTO_REFRESH_MS = 10000; // 10 seconds
+
+// ─── New-order sound & notification system ───────────────────────────────────
+var _knownAdminOrderIds = null; // null = not yet initialised
+
+function playNewOrderSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Two-tone ding: 880 Hz then 1100 Hz
+    [[880, 0, 0.18], [1100, 0.2, 0.18]].forEach(function(t) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = t[0];
+      gain.gain.setValueAtTime(0, ctx.currentTime + t[1]);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + t[1] + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t[1] + t[2]);
+      osc.start(ctx.currentTime + t[1]);
+      osc.stop(ctx.currentTime + t[1] + t[2] + 0.05);
+    });
+  } catch(e) {}
+}
+
+function showNewOrderBrowserNotification(count) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification('🔔 BiteBuzz — New Order!', {
+      body: count + ' new order' + (count > 1 ? 's' : '') + ' received. Check the dashboard.',
+      icon: 'https://em-content.zobj.net/source/google/350/hamburger_1f354.png'
+    });
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+}
+
+function checkForNewAdminOrders(freshOrders) {
+  if (!Array.isArray(freshOrders)) return;
+  var ids = freshOrders.map(function(o) { return o._id; });
+  if (_knownAdminOrderIds === null) {
+    // First load — just store, don't alert
+    _knownAdminOrderIds = ids;
+    return;
+  }
+  var newOnes = ids.filter(function(id) { return !_knownAdminOrderIds.includes(id); });
+  if (newOnes.length > 0) {
+    _knownAdminOrderIds = ids;
+    playNewOrderSound();
+    showNewOrderBrowserNotification(newOnes.length);
+    showToast('🔔 ' + newOnes.length + ' new order' + (newOnes.length > 1 ? 's' : '') + ' arrived!', 'success', 4000);
+  } else {
+    _knownAdminOrderIds = ids;
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function startAutoRefresh(page) {
   stopAutoRefresh(); // clear any existing
@@ -3228,6 +3283,7 @@ async function renderAdminOrders(filter, silent) {
 
   STATE.adminOrders = res;
   updateAdminStats(res);
+  checkForNewAdminOrders(res); // sound + notification on new orders
 
   let orders = res;
   if (filter !== 'all') {
@@ -3698,6 +3754,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (adminLogoutBtn) {
     adminLogoutBtn.addEventListener('click', () => {
       STATE.adminLoggedIn = false;
+      _knownAdminOrderIds = null; // reset so next login starts fresh
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       showToast('Admin logged out', 'info');
