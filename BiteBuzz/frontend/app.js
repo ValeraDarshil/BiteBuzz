@@ -1047,7 +1047,6 @@ function renderMenu(filter) {
 //   if (page === 'status') renderStatusPage();
 //   if (page === 'admin')  renderAdmin();
 //   if (page === 'login')  renderLoginPage();
-  if (page === 'qr')     {} // static page, no render needed
 
 //   updateNavUI();
 // }
