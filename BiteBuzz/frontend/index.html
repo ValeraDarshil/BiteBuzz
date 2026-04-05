@@ -2,9 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>BiteBuzz — Smart Campus Canteen</title>
   <meta name="description" content="Order your favourite food from campus canteen. Fresh, fast, and delicious!">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF5722">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BiteBuzz">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BiteBuzz — Smart Campus Canteen">
+  <meta property="og:description" content="Skip the queue. Order online, track in real-time.">
+  <meta property="og:image" content="icons/icon-512x512.png">
+  <meta property="og:url" content="https://bite-buzz-psi.vercel.app">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -36,6 +54,7 @@
       <li><a href="#" data-page="cart">Cart</a></li>
       <li><a href="#" data-page="status">Order Status</a></li>
       <li><a href="#" data-page="admin">Admin</a></li>
+      <li><a href="#" data-page="qr">📲 Get App</a></li>
       <li><a href="#" data-page="login">Login</a></li>
     </ul>
     <div class="nav-right">
@@ -498,6 +517,89 @@
   </div>
 </div><!-- /page-login -->
 
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: QR / GET APP
+═══════════════════════════════════════════════ -->
+<div id="page-qr" class="page qr-page">
+  <div class="qr-hero">
+    <div class="qr-inner">
+      <div class="qr-badge">📲 Install App</div>
+      <h1>Take BiteBuzz<br>Everywhere</h1>
+      <p>Scan the QR code to open BiteBuzz on your phone — then tap <strong>"Add to Home Screen"</strong> to install it like a real app. No Play Store needed!</p>
+
+      <div class="qr-card">
+        <div class="qr-img-wrap">
+          <img src="bitebuzz-qr.png" alt="BiteBuzz QR Code" class="qr-img">
+        </div>
+        <div class="qr-url">bite-buzz-psi.vercel.app</div>
+        <button class="btn-primary" id="qr-download-btn" style="margin-top:16px">⬇️ Download QR Code</button>
+      </div>
+
+      <div class="qr-steps">
+        <div class="qr-step">
+          <div class="qr-step-num">1</div>
+          <div class="qr-step-text"><strong>Scan</strong> the QR code with your phone camera</div>
+        </div>
+        <div class="qr-step">
+          <div class="qr-step-num">2</div>
+          <div class="qr-step-text"><strong>Open</strong> the link in Chrome (Android) or Safari (iPhone)</div>
+        </div>
+        <div class="qr-step">
+          <div class="qr-step-num">3</div>
+          <div class="qr-step-text"><strong>Tap</strong> "Add to Home Screen" from the browser menu</div>
+        </div>
+        <div class="qr-step">
+          <div class="qr-step-num">4</div>
+          <div class="qr-step-text"><strong>Done!</strong> BiteBuzz is now on your home screen like an app 🎉</div>
+        </div>
+      </div>
+
+      <div class="qr-install-banner" id="pwa-install-banner" style="display:none">
+        <span>🚀 Install BiteBuzz directly on this device!</span>
+        <button class="btn-primary" id="pwa-install-btn" style="padding:10px 20px;font-size:0.9rem">Install App</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
+<script>
+  // Service Worker registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.log('SW failed:', err));
+    });
+  }
+
+  // PWA Install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+
+  document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+      document.getElementById('pwa-install-banner').style.display = 'none';
+    }
+  });
+
+  // QR Download
+  document.getElementById('qr-download-btn') && document.getElementById('qr-download-btn').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = 'bitebuzz-qr.png';
+    a.download = 'BiteBuzz-QR-Code.png';
+    a.click();
+  });
+</script>
 </body>
 </html>
