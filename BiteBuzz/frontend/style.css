@@ -3502,3 +3502,158 @@ body.dark .cart-bar {
   font-weight: 600;
   font-size: 0.95rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — COMPLETE FIX
+   Targets: 320px (small phones) → 480px → 600px → 768px
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Base mobile reset ── */
+@media (max-width: 768px) {
+  * { -webkit-tap-highlight-color: transparent; }
+  body { overflow-x: hidden; }
+
+  /* NAV */
+  .nav-inner { padding: 0 16px; }
+
+  /* HERO */
+  .hero-inner { padding: 32px 16px 24px; gap: 24px; }
+  .hero-title { font-size: clamp(1.9rem, 7vw, 2.8rem) !important; }
+  .hero-sub { font-size: 0.92rem; }
+  .hero-badge { font-size: 0.75rem; padding: 5px 12px; }
+  .hero-stats { flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .stat-item { min-width: 80px; }
+  .hero-actions { flex-direction: column; align-items: center; gap: 10px; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
+
+  /* MENU */
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  .food-card-img { height: 130px; }
+  .food-card-body { padding: 10px 12px; }
+  .food-card-name { font-size: 0.88rem; }
+  .food-card-desc { font-size: 0.75rem; -webkit-line-clamp: 2; }
+  .food-card-footer { flex-wrap: wrap; gap: 6px; }
+  .food-price { font-size: 1rem; }
+  .add-btn { padding: 6px 12px; font-size: 0.8rem; }
+  .category-tabs { overflow-x: auto; flex-wrap: nowrap; padding: 0 16px; gap: 8px; scrollbar-width: none; }
+  .category-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab { flex-shrink: 0; padding: 8px 14px; font-size: 0.8rem; }
+  .menu-header { padding: 20px 0 0; }
+  .menu-section-inner { padding: 16px 16px 80px; }
+  .category-label { padding: 8px 0 12px; }
+  .category-label h2 { font-size: 1.1rem; }
+
+  /* CART */
+  .cart-page-header { padding: 24px 16px 16px; }
+  .cart-page-header h1 { font-size: 1.5rem; }
+  .cart-layout { padding: 16px 16px 80px; gap: 16px; }
+  .cart-item { padding: 12px; gap: 10px; }
+  .cart-item-img { width: 56px; height: 56px; border-radius: 8px; }
+  .cart-item-name { font-size: 0.88rem; }
+  .order-summary { padding: 20px 16px; }
+  .checkout-btn { font-size: 1rem; padding: 14px; }
+
+  /* STATUS PAGE */
+  .status-hero { padding: 28px 16px 20px; }
+  .status-hero h1 { font-size: 1.5rem; }
+  .token-search { flex-direction: row; gap: 8px; }
+  .token-input { font-size: 0.9rem; padding: 12px 14px; }
+  .status-content { padding: 16px; }
+  .status-card { padding: 20px 14px; border-radius: 16px; }
+  .order-token-display { font-size: 1.4rem; }
+  .stepper-steps { gap: 0; }
+  .step { min-width: 0; flex: 1; }
+  .step-circle { width: 34px; height: 34px; font-size: 0.9rem; }
+  .step-label { font-size: 0.6rem; margin-top: 4px; }
+  .stepper-track { margin: 0 17px; }
+  .preview-item-name { font-size: 0.85rem; }
+  .preview-item-price { font-size: 0.85rem; }
+
+  /* ADMIN DASHBOARD */
+  .admin-inner { padding: 16px; }
+  .admin-header-bar { flex-wrap: wrap; gap: 10px; }
+  .admin-header-bar h2 { font-size: 1.3rem; }
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+  }
+  .admin-stat { padding: 12px 8px; border-radius: 12px; }
+  .stat-val { font-size: 1.4rem; }
+  .stat-lbl { font-size: 0.65rem; }
+  .filter-btns { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; gap: 6px; scrollbar-width: none; }
+  .filter-btns::-webkit-scrollbar { display: none; }
+  .filter-btn { flex-shrink: 0; font-size: 0.78rem; padding: 6px 12px; }
+  .admin-order-card { padding: 14px; border-radius: 14px; }
+  .aoc-token { font-size: 1.1rem; }
+  .aoc-footer { gap: 10px; }
+  .aoc-footer .btn-primary { width: 100%; justify-content: center; font-size: 0.85rem; padding: 10px; }
+
+  /* ORDER CONFIRM MODAL */
+  .confirm-modal { padding: 28px 20px; border-radius: 20px; margin: 0 16px; }
+  .token-num { font-size: 2rem; letter-spacing: 6px; }
+  .confirm-actions { flex-direction: column; gap: 10px; }
+  .confirm-actions button { width: 100%; justify-content: center; }
+
+  /* TIMINGS SECTION */
+  .timings-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+
+  /* FOOTER */
+  .footer-inner { padding: 40px 16px 24px; }
+
+  /* FLOATING CART BAR */
+  .cart-bar { left: 12px; right: 12px; border-radius: 14px; padding: 12px 16px; }
+
+  /* QR PAGE */
+  .qr-hero { padding: 40px 16px; }
+  .qr-hero h1 { font-size: 2rem; }
+  .qr-img { width: 180px; height: 180px; }
+  .qr-install-banner { flex-direction: column; text-align: center; }
+}
+
+/* ── Small phones (≤ 480px) ── */
+@media (max-width: 480px) {
+  /* MENU — single column on very small screens */
+  .menu-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  .food-card-img { height: 110px; }
+
+  /* HERO */
+  .hero-title { font-size: clamp(1.6rem, 8vw, 2rem) !important; }
+  .hero-stats .stat-num { font-size: 1.4rem; }
+
+  /* ADMIN STATS */
+  .admin-stats { grid-template-columns: repeat(3, 1fr) !important; }
+  .stat-val { font-size: 1.2rem; }
+
+  /* STEPPER — tighter */
+  .step-circle { width: 30px; height: 30px; font-size: 0.8rem; }
+  .step-label { font-size: 0.55rem; }
+
+  /* SECTION TITLES */
+  .section-title { font-size: 1.5rem !important; }
+  .special-title { font-size: 1.8rem !important; }
+
+  /* TOKEN SEARCH */
+  .token-search { flex-direction: row; gap: 6px; }
+  .token-input { font-size: 0.85rem; padding: 11px 12px; }
+  #lookup-btn { padding: 11px 14px; font-size: 0.85rem; }
+  #refresh-status-btn { width: 44px; height: 44px; }
+
+  /* AUTH */
+  .auth-card { padding: 28px 20px; border-radius: 20px; margin: 0 12px; }
+}
+
+/* ── Very small (≤ 360px) ── */
+@media (max-width: 360px) {
+  .menu-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .food-card-name { font-size: 0.8rem; }
+  .admin-stats { grid-template-columns: repeat(3, 1fr) !important; }
+  .hero-title { font-size: 1.5rem !important; }
+  .step-label { display: none; } /* hide step labels on tiny screens */
+}
