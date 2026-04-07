@@ -2048,17 +2048,42 @@ function getLoggedInUser() {
 // ═══════════════════════════════════════════════
 // ITEM AVAILABILITY MANAGEMENT
 // ═══════════════════════════════════════════════
+// ── Menu Availability (synced with backend) ──────────────────────────────────
+// Local cache so menu renders instantly; backend is source of truth
+var _availabilityCache = {}; // { itemId: true/false }
+var _availabilityLoaded = false;
+
+async function loadAvailabilityFromBackend() {
+  try {
+    const res = await apiRequest('/menu/availability');
+    if (res && typeof res === 'object' && !res.error) {
+      // Merge: backend keys are strings, convert to numbers
+      _availabilityCache = {};
+      Object.keys(res).forEach(k => { _availabilityCache[parseInt(k)] = res[k]; });
+      _availabilityLoaded = true;
+    }
+  } catch(e) {}
+}
+
 function getItemAvailability(itemId) {
-  const availability = JSON.parse(localStorage.getItem('itemAvailability') || '{}');
-  return availability[itemId] !== false; // default: available
+  if (_availabilityCache[itemId] === false) return false;
+  return true; // default available
 }
 
 function setItemAvailability(itemId, available) {
-  const availability = JSON.parse(localStorage.getItem('itemAvailability') || '{}');
-  availability[itemId] = available;
-  localStorage.setItem('itemAvailability', JSON.stringify(availability));
-  showToast(available ? '✅ Item marked available' : '❌ Item marked unavailable', 'success');
+  // Update local cache immediately
+  _availabilityCache[itemId] = available;
+  // Sync to backend (admin only)
+  apiRequest('/menu/availability', 'POST', { itemId, available })
+    .then(res => {
+      if (!res.error) {
+        showToast(available ? '✅ Item marked available' : '❌ Item marked unavailable', 'success');
+      } else {
+        showToast('Failed to update availability', 'error');
+      }
+    });
 }
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ═══════════════════════════════════════════════
 // TOAST
@@ -2148,14 +2173,14 @@ function startAutoRefresh(page) {
     _autoRefreshInterval = setInterval(function() {
       if (STATE.currentPage !== 'status') { stopAutoRefresh(); return; }
       if (STATE.adminLoggedIn) return;
-      loadAllActiveOrders(true); // silent=true — no flicker
+      loadAvailabilityFromBackend().then(() => loadAllActiveOrders(true));
     }, AUTO_REFRESH_MS);
   } else if (page === 'admin') {
     _autoRefreshInterval = setInterval(function() {
       if (STATE.currentPage !== 'admin') { stopAutoRefresh(); return; }
       var dash = document.getElementById('admin-dashboard-panel');
       if (dash && dash.style.display !== 'none') {
-        renderAdminOrders(STATE.currentFilter, true); // silent=true — no flicker
+        renderAdminOrders(STATE.currentFilter, true);
       }
     }, AUTO_REFRESH_MS);
   }
@@ -2176,8 +2201,13 @@ function navigate(page) {
   $$('.nav-links a, .mobile-nav a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
   $('.mobile-nav').classList.remove('open');
 
-  if (page === 'menu')   renderMenu('all');
-  if (page === 'cart')   renderCart();
+  if (page === 'menu') {
+    showMenuSkeleton();
+    loadAvailabilityFromBackend().then(() => renderMenu('all'));
+  }
+  if (page === 'cart') {
+    loadAvailabilityFromBackend().then(() => renderCart());
+  }
   if (page === 'status') renderStatusPage();
   if (page === 'admin')  renderAdmin();
   if (page === 'login')  renderLoginPage();
@@ -3664,6 +3694,9 @@ window.switchAuthTab = function(tab) {
 // INIT
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
+
+  // Load availability from backend on startup
+  loadAvailabilityFromBackend();
 
   // Loading screen
   const loader = document.querySelector('.loading-screen');
