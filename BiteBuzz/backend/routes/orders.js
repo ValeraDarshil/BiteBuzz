@@ -168,6 +168,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const User = require('../models/User');
+const MenuAvailability = require('../models/MenuAvailability'); // ✅ Add this
 const auth = require('../middleware/authMiddleware');
 const admin = require('../middleware/adminMiddleware');
 
@@ -188,6 +189,34 @@ router.post("/create", auth, async (req, res) => {
     if (!items || items.length === 0)
       return res.status(400).json({ msg: "Cart empty" });
 
+    // ✅ RACE CONDITION FIX — Backend checks availability at order time
+    const unavailableRecords = await MenuAvailability.find({
+      itemId: { $in: items.map(i => i.id) },
+      available: false
+    });
+
+    if (unavailableRecords.length > 0) {
+      const unavailableIds = unavailableRecords.map(r => r.itemId);
+      const unavailableNames = items
+        .filter(i => unavailableIds.includes(i.id))
+        .map(i => i.name)
+        .join(', ');
+
+      return res.status(400).json({
+        msg: `Some items are no longer available: ${unavailableNames}. Please remove them and try again.`,
+        unavailableIds
+      });
+    }
+
+    // Suspension check
+    const user = await User.findById(req.user.id);
+    if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+      return res.status(403).json({
+        msg: "You are suspended from ordering",
+        suspendedUntil: user.suspendedUntil
+      });
+    }
+
     const order = new Order({
       userId: req.user.id,
       items,
@@ -197,7 +226,6 @@ router.post("/create", auth, async (req, res) => {
 
     await order.save();
 
-    // ⭐ IMPORTANT — send orderId back
     res.json({
       msg: "Order placed successfully",
       orderId: order._id,
@@ -272,8 +300,6 @@ router.get('/:id', auth, async (req, res) => {
 // =============================================
 
 // GET ALL ORDERS (admin only)
-// ⚠️ NOTE: This is registered BEFORE /:id in middleware chain via explicit path
-//    But since Express matches in order, /all is registered first above in the file — this is fine.
 router.get('/admin/all', auth, admin, async (req, res) => {
   try {
     const orders = await Order.find({})
