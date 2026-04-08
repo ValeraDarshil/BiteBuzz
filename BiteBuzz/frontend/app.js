@@ -1958,6 +1958,10 @@ async function apiRequest(url, method, body) {
       localStorage.removeItem("token");
       return { error: "Session expired. Please login again." };
     }
+    if (!res.ok) {
+      // Backend ne error return kiya (400, 403, 500 etc.)
+      return { error: data.msg || data.error || "Something went wrong." , unavailableIds: data.unavailableIds || [] };
+    }
     return data;
   } catch (err) {
     console.error("API error:", err);
@@ -2957,7 +2961,17 @@ async function placeOrder() {
   if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.textContent = 'Place Order 🚀'; }
 
   if (res.error) {
-    showToast(res.error, 'error');
+    // Agar unavailable items wali error hai — special blocked modal dikhao
+    if (res.unavailableIds && res.unavailableIds.length > 0) {
+      // Cache update karo taaki cart bhi reflect kare
+      res.unavailableIds.forEach(id => { _availabilityCache[id] = false; });
+      showOrderBlockedModal(res.error, res.unavailableIds);
+      // Remove unavailable items from cart silently
+      STATE.cart = STATE.cart.filter(i => !res.unavailableIds.includes(i.id));
+      updateCartUI();
+    } else {
+      showToast(res.error, 'error');
+    }
     return;
   }
 
@@ -2991,6 +3005,54 @@ async function placeOrder() {
   s.textContent = '@keyframes confettiFall { from { transform:translateY(0) rotate(0deg); opacity:1; } to { transform:translateY(100vh) rotate(720deg); opacity:0; } }';
   document.head.appendChild(s);
 })();
+
+// ═══════════════════════════════════════════════
+// ORDER BLOCKED MODAL (item unavailable at checkout)
+// ═══════════════════════════════════════════════
+function showOrderBlockedModal(message, unavailableIds) {
+  // Remove existing if any
+  const existing = document.getElementById('order-blocked-overlay');
+  if (existing) existing.remove();
+
+  const itemNames = STATE.cart
+    .filter(i => unavailableIds.includes(i.id))
+    .map(i => '<span class="blocked-item-tag">' + i.name + '</span>')
+    .join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'order-blocked-overlay';
+  overlay.innerHTML = `
+    <div class="blocked-modal" id="blocked-modal-box">
+      <div class="blocked-icon-wrap">
+        <div class="blocked-icon">🚫</div>
+      </div>
+      <h2 class="blocked-title">Order Blocked</h2>
+      <p class="blocked-sub">The following item(s) became unavailable just as you placed your order.</p>
+      <div class="blocked-items-list">${itemNames || '<span class="blocked-item-tag">Unknown item</span>'}</div>
+      <p class="blocked-hint">These items have been removed from your cart. Please review your cart and try again.</p>
+      <div class="blocked-actions">
+        <button class="btn-primary" id="blocked-back-btn">← Back to Cart</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => overlay.classList.add('show'));
+
+  document.getElementById('blocked-back-btn').addEventListener('click', function() {
+    overlay.classList.remove('show');
+    setTimeout(() => { overlay.remove(); renderCart(); }, 300);
+  });
+
+  // Close on backdrop click
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      overlay.classList.remove('show');
+      setTimeout(() => { overlay.remove(); renderCart(); }, 300);
+    }
+  });
+}
 
 function spawnConfetti() {
   const colors = ['#FF5722','#FFB300','#4CAF50','#2196F3','#9C27B0'];
