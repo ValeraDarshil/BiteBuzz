@@ -2947,7 +2947,7 @@ async function placeOrder() {
   const checkoutBtn = document.getElementById('checkout-btn');
   if (checkoutBtn) { checkoutBtn.disabled = true; checkoutBtn.textContent = 'Placing order...'; }
 
-  const items    = STATE.cart.map(i => ({ name: i.name, price: i.price, quantity: i.qty }));
+  const items    = STATE.cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.qty }));
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const tax      = Math.round(subtotal * 0.05);
   const total    = subtotal + tax;
