@@ -54,6 +54,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/orders'));
 app.use("/api/admin", require("./routes/adminLogin"));
+app.use("/api/menu", require("./routes/menu"));
  
 const auth = require('./middleware/authMiddleware');
  
