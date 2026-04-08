@@ -168,7 +168,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const User = require('../models/User');
-const MenuAvailability = require('../models/MenuAvailability'); // ✅ Add this
+const MenuAvailability = require('../models/MenuAvailability');
 const auth = require('../middleware/authMiddleware');
 const admin = require('../middleware/adminMiddleware');
 
@@ -189,9 +189,13 @@ router.post("/create", auth, async (req, res) => {
     if (!items || items.length === 0)
       return res.status(400).json({ msg: "Cart empty" });
 
-    // ✅ RACE CONDITION FIX — Backend checks availability at order time
+    // ✅ BULLETPROOF RACE CONDITION CHECK
+    // Get item IDs from cart — filter out any that don't have an id (safety net)
+    const cartItemIds = items.map(i => i.id).filter(id => id !== undefined && id !== null);
+
+    // Fetch all unavailable records for these items from DB (real-time)
     const unavailableRecords = await MenuAvailability.find({
-      itemId: { $in: items.map(i => i.id) },
+      itemId: { $in: cartItemIds },
       available: false
     });
 
@@ -283,7 +287,7 @@ router.post('/cancel/:id', auth, async (req, res) => {
 });
 
 
-// GET ORDER BY ID (for status page) — MUST come after named routes
+// GET ORDER BY ID — MUST come after all named routes
 router.get('/:id', auth, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -305,13 +309,11 @@ router.get('/admin/all', auth, admin, async (req, res) => {
     const orders = await Order.find({})
       .sort({ createdAt: -1 })
       .populate('userId', 'name studentId');
-
     res.json(orders);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // UPDATE ORDER STATUS (admin only)
 router.put('/update/:id', auth, admin, async (req, res) => {
@@ -331,12 +333,11 @@ router.put('/update/:id', auth, admin, async (req, res) => {
       "Cancelled":        []
     };
 
-    if (!allowedFlow[order.status]) {
+    if (!allowedFlow[order.status])
       return res.status(400).json({ msg: `Invalid current order status: ${order.status}` });
-    }
-    if (!allowedFlow[order.status].includes(status)) {
+
+    if (!allowedFlow[order.status].includes(status))
       return res.status(400).json({ msg: `Cannot change from ${order.status} to ${status}` });
-    }
 
     order.status = status;
     await order.save();
