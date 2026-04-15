@@ -3969,3 +3969,59 @@ document.addEventListener('DOMContentLoaded', function() {
   updateCartUI();
   updateNavUI();
 });
+
+// last in css
+// /* ===== Responsive Stability Patch ===== */
+
+// html, body {
+//   width: 100%;
+//   max-width: 100%;
+//   overflow-x: hidden;
+// }
+
+// .hero-inner,
+// .section-inner,
+// .menu-section-inner,
+// .cart-layout {
+//   padding-left: clamp(14px, 4vw, 24px);
+//   padding-right: clamp(14px, 4vw, 24px);
+// }
+
+// .menu-grid {
+//   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+// }
+
+// .hero-title {
+//   line-height: 1.15;
+//   word-break: break-word;
+// }
+
+// .token-search {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 10px;
+// }
+
+// .token-input {
+//   flex: 1 1 180px;
+// }
+
+// .hero-visual {
+//   max-width: 100%;
+//   overflow: hidden;
+// }
+
+// .btn-primary,
+// .btn-secondary,
+// .add-btn {
+//   min-height: 44px;
+// }
+
+// .admin-stats {
+//   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+// }
+
+// .qr-img {
+//   width: min(180px, 60vw);
+//   height: auto;
+// }
